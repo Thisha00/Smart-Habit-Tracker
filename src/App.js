@@ -4,94 +4,72 @@ import "react-calendar/dist/Calendar.css";
 import "./App.css";
 
 function App() {
-  const [habit, setHabit] = useState("");
-  const [habits, setHabits] = useState([]);
-  const [date, setDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [habitInput, setHabitInput] = useState("");
+  const [data, setData] = useState({});
+
+  const dateKey = selectedDate.toDateString();
 
   // Load data
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("habits"));
-    if (saved) setHabits(saved);
+    const saved = JSON.parse(localStorage.getItem("habitData"));
+    if (saved) setData(saved);
   }, []);
 
   // Save data
   useEffect(() => {
-    localStorage.setItem("habits", JSON.stringify(habits));
-  }, [habits]);
+    localStorage.setItem("habitData", JSON.stringify(data));
+  }, [data]);
 
-  // Add habit
+  // Add habit to selected day
   const addHabit = () => {
-    if (habit.trim() === "") return;
+    if (habitInput.trim() === "") return;
 
-    const newHabit = {
-      text: habit,
-      dates: [], // store completed dates
-    };
+    const updated = { ...data };
+    if (!updated[dateKey]) updated[dateKey] = [];
 
-    setHabits([...habits, newHabit]);
-    setHabit("");
-  };
-
-  // Mark habit for selected date
-  const toggleHabit = (index) => {
-    const selectedDate = date.toDateString();
-    const updated = [...habits];
-
-    if (updated[index].dates.includes(selectedDate)) {
-      updated[index].dates = updated[index].dates.filter(
-        (d) => d !== selectedDate
-      );
-    } else {
-      updated[index].dates.push(selectedDate);
-    }
-
-    setHabits(updated);
+    updated[dateKey].push(habitInput);
+    setData(updated);
+    setHabitInput("");
   };
 
   // Delete habit
   const deleteHabit = (index) => {
-    const updated = habits.filter((_, i) => i !== index);
-    setHabits(updated);
+    const updated = { ...data };
+    updated[dateKey].splice(index, 1);
+    setData(updated);
   };
+
+  const todayHabits = data[dateKey] || [];
 
   return (
     <div className="container">
-      <h1>📅 Smart Habit Tracker</h1>
+      <h1>📅 Daily Habit Calendar</h1>
 
       {/* Calendar */}
-      <Calendar onChange={setDate} value={date} />
+      <Calendar onChange={setSelectedDate} value={selectedDate} />
 
-      <p>Selected Date: {date.toDateString()}</p>
+      <h2>{dateKey}</h2>
 
       {/* Input */}
       <div className="input-section">
         <input
           type="text"
-          placeholder="Enter habit..."
-          value={habit}
-          onChange={(e) => setHabit(e.target.value)}
+          placeholder="Add habit for this day..."
+          value={habitInput}
+          onChange={(e) => setHabitInput(e.target.value)}
         />
         <button onClick={addHabit}>Add</button>
       </div>
 
-      {/* Habit List */}
+      {/* Habit list for selected day */}
       <ul className="habit-list">
-        {habits.map((h, index) => {
-          const isDone = h.dates.includes(date.toDateString());
-
-          return (
-            <li key={index} className="habit-item">
-              <span
-                className={isDone ? "completed" : ""}
-                onClick={() => toggleHabit(index)}
-              >
-                {h.text}
-              </span>
-
-              <button onClick={() => deleteHabit(index)}>Delete</button>
-            </li>
-          );
-        })}
+        {todayHabits.map((h, index) => (
+          <li key={index} className="habit-item">
+            {h}
+            <button onClick={() => deleteHabit(index)}>Delete</button>
+          </li>
+        ))}
       </ul>
     </div>
   );
