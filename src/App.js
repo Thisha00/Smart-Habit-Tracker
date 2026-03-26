@@ -42,12 +42,22 @@ function App() {
 
   const todayHabits = data[dateKey] || [];
 
+  // Highlight dates with habits
+const tileClassName = ({ date, view }) => {
+  if (view === "month") {
+    const key = date.toDateString();
+    if (data[key] && data[key].length > 0) {
+      return "highlight";
+    }
+  }
+};
+
   return (
     <div className="container">
       <h1>📅 Daily Habit Calendar</h1>
 
       {/* Calendar */}
-      <Calendar onChange={setSelectedDate} value={selectedDate} />
+      <Calendar onChange={setSelectedDate} value={selectedDate} tileClassName={tileClassName}/>
 
       <h2>{dateKey}</h2>
 

@@ -70,3 +70,8 @@ button:hover {
   color: white;
 }
 
+.highlight {
+  background: #4CAF50 !important;
+  color: white !important;
+  border-radius: 50%;
+}
